@@ -9,30 +9,22 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import minimize # for loss func minimization
 from copy import deepcopy
-from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
 
 #################### A3 ####################
 
-def add_intercept(x):
+# def logistic_loss(theta, X, y, return_arr=None):
 
-    """ Add intercept to the data before linear classification """
-    m,n = x.shape
-    intercept = np.ones(m).reshape(m, 1) # the constant b
-    return np.concatenate((intercept, x), axis = 1)
+#     tx = np.dot(X,theta).flatten()
+#     yz = np.multiply(y,tx)
 
-def logistic_loss(theta, X, y, return_arr=None):
-
-    tx = np.dot(X,theta).flatten()
-    yz = np.multiply(y,tx)
-
-    if return_arr == True:
-        out = -(log_logistic(yz))
-    else:
-        out = -np.sum(log_logistic(yz))
-    return out
+#     if return_arr == True:
+#         out = -(log_logistic(yz))
+#     else:
+#         out = -np.sum(log_logistic(yz))
+#     return out
 
 def loss_function(w,X,y,return_arr = None):
     yz = y*np.dot(X,w)
@@ -45,63 +37,58 @@ def loss_function(w,X,y,return_arr = None):
     else:
         return -np.sum(out)
 
-def log_logistic(x):
+# def log_logistic(x):
 
-	out = np.empty_like(x) # same dimensions and data types
+# 	out = np.empty_like(x) # same dimensions and data types
 
-	i = x>0
-	out[i] = -np.log(1.0 + np.exp(-x[i]))
-	out[~i] = x[~i] - np.log(1.0 + np.exp(x[~i]))
-	return out
+# 	i = x>0
+# 	out[i] = -np.log(1.0 + np.exp(-x[i]))
+# 	out[~i] = x[~i] - np.log(1.0 + np.exp(x[~i]))
+# 	return out
 
-def accuracy(w, x, y):
-  shape = x.shape[1]
-  pred = np.dot(x, w.reshape(shape,1))
-  pred_prob = 1/(1+ np.exp(-pred))
-  
-  pred_prob[pred_prob>=0.5] = 1
-  pred_prob[pred_prob<0.5] = -1
+# def accuracy(w, x, y):
+#     shape = x.shape[1]
+#     pred = np.dot(x, w.reshape(shape,1))
+#     pred_prob = 1/(1+ np.exp(-pred))
+    
+#     pred_prob[pred_prob>=0.5] = 1
+#     pred_prob[pred_prob<0.5] = -1
+    
+#     matches = np.where(pred_prob == y)
+    
+#     return (matches[0].shape[0]/pred_prob.shape[0]), pred_prob
 
-  matches = np.where(pred_prob == y)
+# def get_calibration(y_pred, y_true,x_sensitive):
+#     y_pred = y_pred.astype('float64')
+#     y_true = y_true.astype('float64')
+#     x_sensitive = x_sensitive.astype('float64')
+#     idx = (x_sensitive == 0)
+#     p1 = np.mean(y_pred[idx]==y_true[idx])
+#     p0 = np.mean(y_pred[~idx]==y_true[~idx])
+#     out = p1-p0
+#     return out
 
-  return (matches[0].shape[0]/pred_prob.shape[0]), pred_prob
+# def p_rule(x_sensitive, y_pred):
+    
+#     not_protected = np.where(x_sensitive != 0)[0]
+#     protected = np.where(x_sensitive == 0)[0] 
+    
+#     protected_preds = np.where(y_pred[protected] == 0)
+#     nonpro_preds = np.where(y_pred[not_protected] == 0)
+#     protected_perc = (protected_preds[0].shape[0]/protected.shape[0]) 
+#     nonpro_perc = (nonpro_preds[0].shape[0]/not_protected.shape[0])
+    
+#     perc_ratio = protected_perc/nonpro_perc
+    
+#     return perc_ratio, protected_perc, nonpro_perc
 
-def get_calibration(y_pred, y_true,x_sensitive):
-    y_pred = y_pred.astype('float64')
-    y_true = y_true.astype('float64')
-    x_sensitive = x_sensitive.astype('float64')
-    idx = (x_sensitive == 1.0)
-    p1 = np.mean(y_pred[idx]==y_true[idx])
-    p0 = np.mean(y_pred[~idx]==y_true[~idx])
-    out = p1-p0
-    return out
-
-def p_rule(x_sensitive, y_pred):
-  
-  not_protected = np.where(x_sensitive != 1)[0]
-  protected = np.where(x_sensitive == 1)[0] 
-
-  protected_preds = np.where(y_pred[protected] == 1)
-  nonpro_preds = np.where(y_pred[not_protected] == 1)
-  protected_perc = (protected_preds[0].shape[0]/protected.shape[0]) 
-  nonpro_perc = (nonpro_preds[0].shape[0]/not_protected.shape[0])
-
-  perc_ratio = protected_perc/nonpro_perc
-
-  return perc_ratio, protected_perc, nonpro_perc
-
-#Covariance function for Optmization
-def opt_function(w, x, x_sensitive):
-  protected_cov = (x_sensitive - np.mean(x_sensitive)) * np.dot(w, x.T)
-  return float(abs(sum(protected_cov))) / float(x.shape[0])
-
-def calibration(features,y_pred,y_actual):
+def calibration(y_pred,y_actual,s):
     cal_0 = 0
     cal_1 = 0
     count_0 = 0
     count_1 = 0
-    for i in range(len(features)):
-        if list(features["race"])[i] == 0:
+    for i in range(len(y_pred)):
+        if s[i] == 0:
             count_0 += 1
             if list(y_actual)[i] == y_pred[i]:
                 cal_0 += 1
@@ -113,97 +100,69 @@ def calibration(features,y_pred,y_actual):
     cal_0 /= count_0
     cal_1 /= count_1
 
-    return cal_1 - cal_0
+    return cal_0 - cal_1
 
-def loss_function(w,X,y,return_arr = None):
-    yz = y*np.dot(X,w)
-    out = np.empty_like(yz)
-    ind = yz >0.0
-    out[ind] = -np.log(1.0+np.exp(-yz[ind]))
-    out[~ind] = yz[~ind] - np.log(1.0+np.exp(yz[~ind]))
-    if return_arr == True:
-        return -out
-    else:
-        return -np.sum(out)
+def model_gamma(x, y, s,theta_star, gamma=0.1):
 
-def model_gamma(x, y, s, y_pred):
-
-    # train on just the loss function
-    theta = minimize(fun = logistic_loss,
-                 x0 = np.random.rand(x.shape[1],),
-                 args = (x, y),
-                 method = 'SLSQP',
-                 options = {"maxiter":100000},
-                 constraints = []
-                 )
-    theta_star = deepcopy(theta.x)
-    
-    gamma = 0.1
+    unconstrained_loss_arr = loss_function(theta_star, x, y, return_arr=True)
 
     def constraint_gamma_all(theta, x, y,  initial_loss_arr):
         
-        new_loss = logistic_loss(theta, x, y)
+        new_loss = loss_function(theta, x, y)
         old_loss = sum(initial_loss_arr)
         return ((1.0 + gamma) * old_loss) - new_loss
 
-    unconstrained_loss_arr = logistic_loss(theta.x, x, y, return_arr=True)
+    constraints = [{'type': 'ineq', 'fun': constraint_gamma_all, 'args':(x,y,unconstrained_loss_arr)}]
 
-    constraints = [({'type': 'ineq', 'fun': constraint_gamma_all, 'args':(x,y,unconstrained_loss_arr)})]
+    #Covariance function for Optmization
+    def opt_function(w, x, x_sensitive):
+        protected_cov = (x_sensitive - np.mean(x_sensitive)) * np.dot(w, x.T)
+        return float(abs(sum(protected_cov))) / float(x.shape[0])
 
-    def cross_cov_abs_optm_func(weight_vec, x_in, x_control_in_arr):
-        cross_cov = (x_control_in_arr - np.mean(x_control_in_arr)) * np.dot(weight_vec, x_in.T)
-        return float(abs(sum(cross_cov))) / float(x_in.shape[0])
-
-
-    theta = minimize(fun = cross_cov_abs_optm_func,
-        x0 = theta_star,
-        args = (x, s),
-        method = 'SLSQP',
-        options = {"maxiter":100000},
-        constraints = constraints
-        )
+    theta = minimize(fun = opt_function,
+    x0 = theta_star,
+    args = (x, s),
+    method = 'SLSQP',
+    options = {"maxiter":100000},
+    constraints = constraints
+    )
 
     return theta.x
 
-def model_fg(x, y, s, y_pred):
-    
-    # train on just the loss function
-    theta = minimize(fun = logistic_loss,
-                 x0 = np.random.rand(x.shape[1],),
-                 args = (x, y),
-                 method = 'SLSQP',
-                 options = {"maxiter":100000},
-                 constraints = []
-                 )
-    theta_star= deepcopy(theta.x)
+def predict(w,x):
+    z = np.dot(w,x.T)
+    y = 1/(1+np.exp(-z))
+    y = (y>=0.5)
+    y = y.astype('float64')
+    return y
 
-    gamma = 0.1
-
-    def constraint_protected_people(theta,x,y): # dont confuse the protected here with the sensitive feature protected/non-protected values -- protected here means that these points should not be misclassified to negative class
-        return np.dot(theta, x.T) # if this is positive, the constraint is satisfied
-
-    def constraint_unprotected_people(theta,ind,old_loss,x,y):
-
-        new_loss = loss_function(theta, np.array([x]), np.array(y))
-        return ((1.0 + gamma) * old_loss) - new_loss
+def model_fg(x, y, s, theta_star, gamma=0.1):
 
     constraints = []
-    predicted_labels = y_pred
-    unconstrained_loss_arr = loss_function(theta.x, x, y, return_arr=True)
+    predicted_labels = predict(theta_star,x)
+    unconstrained_loss_arr = loss_function(theta_star, x, y, return_arr=True)
+
+    def constraint_protected_people(w,x,y):
+        #for fine-gamma, constraint to prevent non-protected user be classify as negative
+        return(np.dot(w,x.T))
     
+    def constraint_unprotected_people(w,old_loss,x,y):
+        new_loss = loss_function(w,np.array([x]),np.array(y))
+        return((1.0+gamma)*old_loss)-new_loss
+
     for i in range(0, len(predicted_labels)):
-        if predicted_labels[i] == 1.0 and s[i] == 1.0: # for now we are assuming just one sensitive attr for reverse constraint, later, extend the code to take into account multiple sensitive attrs
-            c = ({'type': 'ineq', 'fun': constraint_protected_people, 'args':(x[i], y[i])}) # this constraint makes sure that these people stay in the positive class even in the modified classifier             
+        if predicted_labels[i] == 0 and s[i] == 0:
+            c = {'type': 'ineq', 'fun': constraint_protected_people, 'args':(x[i], y[i])}
             constraints.append(c)
         else:
-            c = ({'type': 'ineq', 'fun': constraint_unprotected_people, 'args':(i, unconstrained_loss_arr[i], x[i], y[i])})                
+            c = {'type': 'ineq', 'fun': constraint_unprotected_people, 'args':(unconstrained_loss_arr[i], x[i], y[i])}
             constraints.append(c)
+    
+    def opt_function(w, x, x_sensitive):
+      protected_cov = (x_sensitive - np.mean(x_sensitive)) * np.dot(w, x.T)
+      return float(abs(sum(protected_cov))) / float(x.shape[0])
 
-    def cross_cov_abs_optm_func(weight_vec, x_in, x_control_in_arr):
-        cross_cov = (x_control_in_arr - np.mean(x_control_in_arr)) * np.dot(weight_vec, x_in.T)
-        return float(abs(sum(cross_cov))) / float(x_in.shape[0])
-
-    theta = minimize(fun = cross_cov_abs_optm_func,
+    theta = minimize(fun = opt_function,
         x0 = theta_star,
         args = (x, s),
         method = 'SLSQP',
@@ -212,7 +171,6 @@ def model_fg(x, y, s, y_pred):
         )
 
     return theta.x
-
 
 
 #################### A6 ####################
@@ -339,7 +297,7 @@ def local_massaging(X,s,e,y):
     X['new_label'] = result.new_label
     return X
 
-def local_preferential_sampking(X,s,e,y):
+def local_preferential_sampling(X,s,e,y):
     X['race'] = s
     X_i_list =partition(X,e)
     df_list = []
