@@ -12,6 +12,7 @@ from copy import deepcopy
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import log_loss
 
 #################### A3 ####################
 
@@ -27,7 +28,8 @@ from sklearn.model_selection import train_test_split
 #     return out
 
 def loss_function(w,X,y,return_arr = None):
-    yz = y*np.dot(X,w)
+    z = np.dot(w,X.T)
+    yz = y*z
     out = np.empty_like(yz)
     ind = yz >0.0
     out[ind] = -np.log(1.0+np.exp(-yz[ind]))
@@ -102,6 +104,13 @@ def calibration(y_pred,y_actual,s):
 
     return cal_0 - cal_1
 
+def predict(w,x):
+    z = np.dot(w,x.T)
+    y = 1/(1+np.exp(-z))
+    y = (y>=0.5)
+    y = y.astype('float64')
+    return y
+
 def model_gamma(x, y, s,theta_star, gamma=0.1):
 
     unconstrained_loss_arr = loss_function(theta_star, x, y, return_arr=True)
@@ -128,13 +137,6 @@ def model_gamma(x, y, s,theta_star, gamma=0.1):
     )
 
     return theta.x
-
-def predict(w,x):
-    z = np.dot(w,x.T)
-    y = 1/(1+np.exp(-z))
-    y = (y>=0.5)
-    y = y.astype('float64')
-    return y
 
 def model_fg(x, y, s, theta_star, gamma=0.1):
 
