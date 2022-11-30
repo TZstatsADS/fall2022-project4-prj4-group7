@@ -4,17 +4,18 @@
 
 Term: Fall 2022
 
-+ Team #
-+ Projec title: Lorem ipsum dolor sit amet
++ Team #7
++ Project title: Study of Select Machine Learning Fairness
 + Team members
-	+ team member 1
-	+ team member 2
-	+ team member 3
-	+ team member 4
-	+ team member 5
-+ Project summary: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+	+ Cheng, Louis yc3733@columbia.edu
+	+ Kolluri, Sameer ssk2258@columbia.edu
+	+ Lee, Sangmin sl4876@columbia.edu
+	+ Wang, Fu fw2376@columbia.edu
+	+ Wu, Judy dw2936@columbia.edu
+
++ Project summary: We explored the implementation of two methods of machine learning fairness by applying these methods to the COMPAS dataset. One method was a in-processing method: Maximizing fairness under accuracy constraints (referred as A3) and the other was a pre-processing approach: Handling Conditional Discrimination (A6). Our goal was to optimize accuracy and calibration (getting close to an equal percentage of African-Americans and Caucasians being labeled correctly) in determining whether an individual would become a recidivist - a re-offender. A3 did this by maximizing the fairness of the model subject to constraints on accuracy determined by the unconstrained model. A6 .... We found...
 	
-**Contribution statement**: [default] All team members contributed equally in all stages of this project. All team members approve our work presented in this GitHub repository including this contributions statement. 
+**Contribution statement**: [default] All team members contributed to the data processing steps. Louis, Sangmin, Judy and Sameer worked on Algorithm A3. Fu worked on Algorithm A6. All team members approve our work presented in this GitHub repository including this contributions statement. 
 
 Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
 
