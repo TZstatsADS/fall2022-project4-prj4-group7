@@ -16,17 +16,6 @@ from sklearn.metrics import log_loss
 
 #################### A3 ####################
 
-# def logistic_loss(theta, X, y, return_arr=None):
-
-#     tx = np.dot(X,theta).flatten()
-#     yz = np.multiply(y,tx)
-
-#     if return_arr == True:
-#         out = -(log_logistic(yz))
-#     else:
-#         out = -np.sum(log_logistic(yz))
-#     return out
-
 def loss_function(w,X,y,return_arr = None):
     z = np.dot(w,X.T)
     yz = y*z
@@ -38,51 +27,6 @@ def loss_function(w,X,y,return_arr = None):
         return -out
     else:
         return -np.sum(out)
-
-# def log_logistic(x):
-
-# 	out = np.empty_like(x) # same dimensions and data types
-
-# 	i = x>0
-# 	out[i] = -np.log(1.0 + np.exp(-x[i]))
-# 	out[~i] = x[~i] - np.log(1.0 + np.exp(x[~i]))
-# 	return out
-
-# def accuracy(w, x, y):
-#     shape = x.shape[1]
-#     pred = np.dot(x, w.reshape(shape,1))
-#     pred_prob = 1/(1+ np.exp(-pred))
-    
-#     pred_prob[pred_prob>=0.5] = 1
-#     pred_prob[pred_prob<0.5] = -1
-    
-#     matches = np.where(pred_prob == y)
-    
-#     return (matches[0].shape[0]/pred_prob.shape[0]), pred_prob
-
-# def get_calibration(y_pred, y_true,x_sensitive):
-#     y_pred = y_pred.astype('float64')
-#     y_true = y_true.astype('float64')
-#     x_sensitive = x_sensitive.astype('float64')
-#     idx = (x_sensitive == 0)
-#     p1 = np.mean(y_pred[idx]==y_true[idx])
-#     p0 = np.mean(y_pred[~idx]==y_true[~idx])
-#     out = p1-p0
-#     return out
-
-# def p_rule(x_sensitive, y_pred):
-    
-#     not_protected = np.where(x_sensitive != 0)[0]
-#     protected = np.where(x_sensitive == 0)[0] 
-    
-#     protected_preds = np.where(y_pred[protected] == 0)
-#     nonpro_preds = np.where(y_pred[not_protected] == 0)
-#     protected_perc = (protected_preds[0].shape[0]/protected.shape[0]) 
-#     nonpro_perc = (nonpro_preds[0].shape[0]/not_protected.shape[0])
-    
-#     perc_ratio = protected_perc/nonpro_perc
-    
-#     return perc_ratio, protected_perc, nonpro_perc
 
 def calibration(y_pred,y_actual,s):
     cal_0 = 0
